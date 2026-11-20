@@ -1,0 +1,43 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11/13/2026 01:45:31 PM
+// Design Name: 
+// Module Name: ROM
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module ROM(
+    input [2:0] addr,
+    output reg [3:0] data
+);
+
+always @(*) begin
+    case (addr)
+        3'b000: data = 4'd0;
+        3'b001: data = 4'd1;
+        3'b010: data = 4'd2;
+        3'b011: data = 4'd3;
+        3'b100: data = 4'd4;
+        3'b101: data = 4'd5;
+        3'b110: data = 4'd6;
+        3'b111: data = 4'd7;
+        default: data = 4'd0;
+    endcase
+end
+
+endmodule
+
