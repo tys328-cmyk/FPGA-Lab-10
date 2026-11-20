@@ -1,0 +1,89 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11/13/2026 01:48:40 PM
+// Design Name: 
+// Module Name: tb_Multiplier_top
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module tb_Multiplier_top;
+
+reg clk;
+reg reset;
+reg [2:0] addr1_ROM;
+reg [2:0] addr2_ROM;
+reg [2:0] addr_RAM;
+
+wire [7:0] result;
+wire [2:0] state;
+
+Multiplier_top #(
+    .CLK_DIV(2)
+) DUT (
+    .clk(clk),
+    .reset(reset),
+    .addr1_ROM(addr1_ROM),
+    .addr2_ROM(addr2_ROM),
+    .addr_RAM(addr_RAM),
+    .result(result),
+    .state(state)
+);
+
+initial clk = 0;
+always #5 clk = ~clk;
+
+task run_test;
+    input [2:0] a1, a2, ram_addr;
+    input [7:0] expected;
+    begin
+        @(negedge clk);
+        addr1_ROM = a1;
+        addr2_ROM = a2;
+        addr_RAM = ram_addr;
+
+        reset = 1;
+        repeat (2) @(negedge clk);
+        reset = 0;
+
+        repeat (14) @(negedge clk);
+
+        if (result === expected)
+            $display("PASS: ROM[%0d] * ROM[%0d] = %0d",
+                     a1, a2, result);
+        else
+            $display("FAIL: Expected %0d, got %0d",
+                     expected, result);
+    end
+endtask
+
+initial begin
+    reset = 1;
+    addr1_ROM = 0;
+    addr2_ROM = 0;
+    addr_RAM = 0;
+
+    run_test(0, 1, 0, 8'd6);
+    run_test(2, 3, 1, 8'd20);
+    run_test(4, 5, 2, 8'd42);
+    run_test(6, 7, 2, 8'd72);
+
+    $display("All test cases completed.");
+    $finish;
+end
+
+endmodule
+
