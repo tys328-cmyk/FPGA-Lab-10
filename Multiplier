@@ -1,0 +1,106 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11/13/2026 01:43:45 PM
+// Design Name: 
+// Module Name: Multiplier_top
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module Multiplier_top #(
+    parameter integer CLK_DIV = 10000000
+)(
+    input clk,
+    input reset,
+    input [2:0] addr1_ROM,
+    input [2:0] addr2_ROM,
+    input [2:0] addr_RAM,
+    output [7:0] result,
+    output [2:0] state
+);
+
+    wire [2:0] rom_addr;
+    wire [3:0] rom_data;
+    wire [3:0] A, B;
+    wire [7:0] product;
+
+    wire w_rf, w_ram, r_ram;
+    wire DA, SA, SB;
+
+    reg [31:0] count = 0;
+    wire tick = (count == CLK_DIV - 1);
+
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            count <= 0;
+        else if (tick)
+            count <= 0;
+        else
+            count <= count + 1;
+    end
+
+    cu uut0(
+        .clk(clk),
+        .reset(reset),
+        .enable(tick),
+        .adr1(addr1_ROM),
+        .adr2(addr2_ROM),
+        .w_rf(w_rf),
+        .adr(rom_addr),
+        .DA(DA),
+        .SA(SA),
+        .SB(SB),
+        .st_out(state),
+        .w_ram(w_ram),
+        .r_ram(r_ram)
+    );
+
+    ROM uut1(
+        .addr(rom_addr),
+        .data(rom_data)
+    );
+
+    RF uut2(
+        .A(A),
+        .B(B),
+        .SA(SA),
+        .SB(SB),
+        .D(rom_data),
+        .DA(DA),
+        .W(w_rf && tick),
+        .rst(reset),
+        .clk(clk)
+    );
+
+    comb_mult uut3(
+        .A(A),
+        .B(B),
+        .P(product)
+    );
+
+    RAM uut4(
+        .i_clk(clk),
+        .i_rst(reset),
+        .i_addr(addr_RAM),
+        .i_write_data(product),
+        .i_write_en(w_ram && tick),
+        .i_read_en(r_ram && tick),
+        .o_read_data(result)
+    );
+
+endmodule
+
+
