@@ -1,0 +1,94 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11/13/2026 01:46:32 PM
+// Design Name: 
+// Module Name: RF
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module RF(A, B, SA, SB, D, DA, W, rst, clk);
+
+    output [3:0] A, B;
+    input SA, SB;
+    input [3:0] D;
+    input DA, W, rst, clk;
+
+    wire [1:0] load_enable;
+    wire [3:0] R00, R01;
+
+    Decoder1to2 decoder(
+        load_enable, DA, W
+    );
+
+    RegisterNbit reg00(
+        D, R00, load_enable[0], rst, clk
+    );
+
+    RegisterNbit reg01(
+        D, R01, load_enable[1], rst, clk
+    );
+
+    Mux2to1Nbit muxA(A, R00, R01, SA);
+    Mux2to1Nbit muxB(B, R00, R01, SB);
+
+endmodule
+
+
+module RegisterNbit(D, Q, L, R, clock);
+
+    parameter N = 4;
+
+    input [N-1:0] D;
+    input L, R, clock;
+    output reg [N-1:0] Q;
+
+    always @(posedge clock or posedge R) begin
+        if (R)
+            Q <= 0;
+        else if (L)
+            Q <= D;
+    end
+
+endmodule
+
+
+module Decoder1to2(m, S, en);
+
+    input S, en;
+    output [1:0] m;
+
+    assign m[0] = ~S & en;
+    assign m[1] = S & en;
+
+endmodule
+
+
+module Mux2to1Nbit(o, i1, i2, s);
+
+    input [3:0] i1, i2;
+    input s;
+    output reg [3:0] o;
+
+    always @(*) begin
+        if (s)
+            o = i2;
+        else
+            o = i1;
+    end
+
+endmodule
+
